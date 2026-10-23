@@ -1,205 +1,187 @@
-# Stable Diffusion web UI
-A web interface for Stable Diffusion, implemented using Gradio library.
+<div align="center">
 
-![](screenshot.png)
+<img src="assets/banner.png" alt="Stable Diffusion web UI" width="100%"/>
 
-## Features
-[Detailed feature showcase with images](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Features):
-- Original txt2img and img2img modes
-- One click install and run script (but you still must install python and git)
-- Outpainting
-- Inpainting
-- Color Sketch
-- Prompt Matrix
-- Stable Diffusion Upscale
-- Attention, specify parts of text that the model should pay more attention to
-    - a man in a `((tuxedo))` - will pay more attention to tuxedo
-    - a man in a `(tuxedo:1.21)` - alternative syntax
-    - select text and press `Ctrl+Up` or `Ctrl+Down` (or `Command+Up` or `Command+Down` if you're on a MacOS) to automatically adjust attention to selected text (code contributed by anonymous user)
-- Loopback, run img2img processing multiple times
-- X/Y/Z plot, a way to draw a 3 dimensional plot of images with different parameters
-- Textual Inversion
-    - have as many embeddings as you want and use any names you like for them
-    - use multiple embeddings with different numbers of vectors per token
-    - works with half precision floating point numbers
-    - train embeddings on 8GB (also reports of 6GB working)
-- Extras tab with:
-    - GFPGAN, neural network that fixes faces
-    - CodeFormer, face restoration tool as an alternative to GFPGAN
-    - RealESRGAN, neural network upscaler
-    - ESRGAN, neural network upscaler with a lot of third party models
-    - SwinIR and Swin2SR ([see here](https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/2092)), neural network upscalers
-    - LDSR, Latent diffusion super resolution upscaling
-- Resizing aspect ratio options
-- Sampling method selection
-    - Adjust sampler eta values (noise multiplier)
-    - More advanced noise setting options
-- Interrupt processing at any time
-- 4GB video card support (also reports of 2GB working)
-- Correct seeds for batches
-- Live prompt token length validation
-- Generation parameters
-     - parameters you used to generate images are saved with that image
-     - in PNG chunks for PNG, in EXIF for JPEG
-     - can drag the image to PNG info tab to restore generation parameters and automatically copy them into UI
-     - can be disabled in settings
-     - drag and drop an image/text-parameters to promptbox
-- Read Generation Parameters Button, loads parameters in promptbox to UI
-- Settings page
-- Running arbitrary python code from UI (must run with `--allow-code` to enable)
-- Mouseover hints for most UI elements
-- Possible to change defaults/mix/max/step values for UI elements via text config
-- Tiling support, a checkbox to create images that can be tiled like textures
-- Progress bar and live image generation preview
-    - Can use a separate neural network to produce previews with almost none VRAM or compute requirement
-- Negative prompt, an extra text field that allows you to list what you don't want to see in generated image
-- Styles, a way to save part of prompt and easily apply them via dropdown later
-- Variations, a way to generate same image but with tiny differences
-- Seed resizing, a way to generate same image but at slightly different resolution
-- CLIP interrogator, a button that tries to guess prompt from an image
-- Prompt Editing, a way to change prompt mid-generation, say to start making a watermelon and switch to anime girl midway
-- Batch Processing, process a group of files using img2img
-- Img2img Alternative, reverse Euler method of cross attention control
-- Highres Fix, a convenience option to produce high resolution pictures in one click without usual distortions
-- Reloading checkpoints on the fly
-- Checkpoint Merger, a tab that allows you to merge up to 3 checkpoints into one
-- [Custom scripts](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Custom-Scripts) with many extensions from community
-- [Composable-Diffusion](https://energy-based-model.github.io/Compositional-Visual-Generation-with-Composable-Diffusion-Models/), a way to use multiple prompts at once
-     - separate prompts using uppercase `AND`
-     - also supports weights for prompts: `a cat :1.2 AND a dog AND a penguin :2.2`
-- No token limit for prompts (original stable diffusion lets you use up to 75 tokens)
-- DeepDanbooru integration, creates danbooru style tags for anime prompts
-- [xformers](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Xformers), major speed increase for select cards: (add `--xformers` to commandline args)
-- via extension: [History tab](https://github.com/yfszzx/stable-diffusion-webui-images-browser): view, direct and delete images conveniently within the UI
-- Generate forever option
-- Training tab
-     - hypernetworks and embeddings options
-     - Preprocessing images: cropping, mirroring, autotagging using BLIP or deepdanbooru (for anime)
-- Clip skip
-- Hypernetworks
-- Loras (same as Hypernetworks but more pretty)
-- A separate UI where you can choose, with preview, which embeddings, hypernetworks or Loras to add to your prompt
-- Can select to load a different VAE from settings screen
-- Estimated completion time in progress bar
-- API
-- Support for dedicated [inpainting model](https://github.com/runwayml/stable-diffusion#inpainting-with-stable-diffusion) by RunwayML
-- via extension: [Aesthetic Gradients](https://github.com/AUTOMATIC1111/stable-diffusion-webui-aesthetic-gradients), a way to generate images with a specific aesthetic by using clip images embeds (implementation of [https://github.com/vicgalle/stable-diffusion-aesthetic-gradients](https://github.com/vicgalle/stable-diffusion-aesthetic-gradients))
-- [Stable Diffusion 2.0](https://github.com/Stability-AI/stablediffusion) support - see [wiki](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Features#stable-diffusion-20) for instructions
-- [Alt-Diffusion](https://arxiv.org/abs/2211.06679) support - see [wiki](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Features#alt-diffusion) for instructions
-- Now without any bad letters!
-- Load checkpoints in safetensors format
-- Eased resolution restriction: generated image's dimensions must be a multiple of 8 rather than 64
-- Now with a license!
-- Reorder elements in the UI from settings screen
-- [Segmind Stable Diffusion](https://huggingface.co/segmind/SSD-1B) support
+# 🎨 Stable Diffusion web UI
 
-## Installation and Running
-Make sure the required [dependencies](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Dependencies) are met and follow the instructions available for:
-- [NVidia](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Install-and-Run-on-NVidia-GPUs) (recommended)
-- [AMD](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Install-and-Run-on-AMD-GPUs) GPUs.
-- [Intel CPUs, Intel GPUs (both integrated and discrete)](https://github.com/openvinotoolkit/stable-diffusion-webui/wiki/Installation-on-Intel-Silicon) (external wiki page)
-- [Ascend NPUs](https://github.com/wangshuai09/stable-diffusion-webui/wiki/Install-and-run-on-Ascend-NPUs) (external wiki page)
+**A browser interface for Stable Diffusion, built on Gradio — with a prompt parser that tells you when your prompt is broken.**
 
-Alternatively, use online services (like Google Colab):
+*— forked from [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui), with prompt syntax diagnostics & a restyled page*
 
-- [List of Online Services](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Online-Services)
+[![Forks](https://img.shields.io/github/forks/vincntlaw/stable-diffusion-webui?style=flat-square&logo=github)](https://github.com/vincntlaw/stable-diffusion-webui/network)
+[![Upstream Stars](https://img.shields.io/github/stars/AUTOMATIC1111/stable-diffusion-webui?style=flat-square&logo=github&label=upstream%20%E2%AD%90)](https://github.com/AUTOMATIC1111/stable-diffusion-webui/stargazers)
+[![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![Gradio](https://img.shields.io/badge/UI-Gradio-F97316?style=flat-square)](https://gradio.app)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-000000?style=flat-square)](LICENSE.txt)
 
-### Installation on Windows 10/11 with NVidia-GPUs using release package
-1. Download `sd.webui.zip` from [v1.0.0-pre](https://github.com/AUTOMATIC1111/stable-diffusion-webui/releases/tag/v1.0.0-pre) and extract its contents.
-2. Run `update.bat`.
-3. Run `run.bat`.
-> For more details see [Install-and-Run-on-NVidia-GPUs](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Install-and-Run-on-NVidia-GPUs)
+[![Discord Presence](https://lanyard.cnrad.dev/api/283333002749018113)](https://discord.com/users/283333002749018113)
 
-### Automatic Installation on Windows
-1. Install [Python 3.10.6](https://www.python.org/downloads/release/python-3106/) (Newer version of Python does not support torch), checking "Add Python to PATH".
-2. Install [git](https://git-scm.com/download/win).
-3. Download the stable-diffusion-webui repository, for example by running `git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git`.
-4. Run `webui-user.bat` from Windows Explorer as normal, non-administrator, user.
+*The Discord card above is **live** — my real presence & activity via [Lanyard](https://github.com/Phineas/lanyard).*
 
-### Automatic Installation on Linux
-1. Install the dependencies:
-```bash
-# Debian-based:
-sudo apt install wget git python3 python3-venv libgl1 libglib2.0-0
-# Red Hat-based:
-sudo dnf install wget git python3 gperftools-libs libglvnd-glx
-# openSUSE-based:
-sudo zypper install wget git python3 libtcmalloc4 libglvnd
-# Arch-based:
-sudo pacman -S wget git python3
-```
-If your system is very new, you need to install python3.11 or python3.10:
-```bash
-# Ubuntu 24.04
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt update
-sudo apt install python3.11
+</div>
 
-# Manjaro/Arch
-sudo pacman -S yay
-yay -S python311 # do not confuse with python3.11 package
+---
 
-# Only for 3.11
-# Then set up env variable in launch script
-export python_cmd="python3.11"
-# or in webui-user.sh
-python_cmd="python3.11"
-```
-2. Navigate to the directory you would like the webui to be installed and execute the following command:
-```bash
-wget -q https://raw.githubusercontent.com/AUTOMATIC1111/stable-diffusion-webui/master/webui.sh
-```
-Or just clone the repo wherever you want:
-```bash
-git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui
+> 🍴 **This is a fork.** Stable Diffusion web UI is created and maintained by **[@AUTOMATIC1111](https://github.com/AUTOMATIC1111)** — the [upstream repository](https://github.com/AUTOMATIC1111/stable-diffusion-webui) is the authoritative home for docs, issues and releases. This fork adds the prompt-syntax work below and restyles this page. The upstream install commands are unchanged.
+
+## 🧪 What this fork adds
+
+**Attention weights that are not numbers used to kill the whole generation, and unbalanced brackets used to change the rest of the prompt without a word. The parser survives the first, and the token counter reports the second.**
+
+```python
+>>> from modules import prompt_parser
+>>> prompt_parser.parse_prompt_attention("a (cat:1.2.3)")
+ValueError: could not convert string to float: '1.2.3'    # upstream: the generation dies here
 ```
 
-3. Run `webui.sh`.
-4. Check `webui-user.sh` for options.
-### Installation on Apple Silicon
+A weight is only a weight if it is an actual number. Anything else — `.`, `1.2.3`, `..5`, `+.` — stays in the prompt as plain text instead of reaching `float()`:
 
-Find the instructions [here](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Installation-on-Apple-Silicon).
+```python
+>>> prompt_parser.parse_prompt_attention("a (cat:1.2.3)")
+[['a ', 1.0], ['cat:1.2.3', 1.1]]
+>>> prompt_parser.check_prompt_syntax("a (cat:1.2.3")
+["invalid weight '1.2.3'", "unclosed '(' bracket"]
+```
 
-## Contributing
-Here's how to add code to this repo: [Contributing](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Contributing)
+The warnings show up next to the token counter as a ⚠ whose tooltip lists everything wrong with the prompt, behind the new **Settings → User Interface → Prompt editing → "Show prompt syntax warnings next to the token counter"** option.
 
-## Documentation
+- 🛡️ **Malformed weights no longer abort a generation** — `(cat:1.2.3)` is parsed as text and reported, not raised
+- 💬 **Bracket mistakes become visible** — unclosed `(`/`[` and stray `)`/`]` are listed in the tooltip
+- ⚡ **Schedules are memoized** — 19.5 ms → 0.3 ms on repeated requests, with fresh lists handed to every caller
+- 🧪 **The prompt parser has tests now** — 35 unit cases, plus the existing doctests
+- 🔒 **No behaviour change for valid prompts** — balanced prompts parse exactly as before
 
-The documentation was moved from this README over to the project's [wiki](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki).
+| Prompt | What the token counter says |
+|---|---|
+| `a (cat` | `unclosed '(' bracket` |
+| `a ((cat` | `2 unclosed '(' brackets` |
+| `a [cat` | `unclosed '[' bracket` |
+| `a cat)` | `unexpected ')' without a matching '('` |
+| `a (cat:1.2.3)` | `invalid weight '1.2.3'` |
 
-For the purposes of getting Google and other search engines to crawl the wiki, here's a link to the (not for humans) [crawlable wiki](https://github-wiki-see.page/m/AUTOMATIC1111/stable-diffusion-webui/wiki).
+| | upstream | this fork |
+|---|---|---|
+| `"a (cat:.)"` | `ValueError`, generation aborted | parsed, reported as `invalid weight '.'` |
+| 100,000 fuzzed prompts | — | 0 exceptions |
+| repeated schedule parse | 19.5 ms | 0.3 ms |
+| prompt-parser unit tests | none | 35 |
 
-## Credits
-Licenses for borrowed code can be found in `Settings -> Licenses` screen, and also in `html/licenses.html` file.
+## ✨ What does it do?
 
-- Stable Diffusion - https://github.com/Stability-AI/stablediffusion, https://github.com/CompVis/taming-transformers, https://github.com/mcmonkey4eva/sd3-ref
-- k-diffusion - https://github.com/crowsonkb/k-diffusion.git
-- Spandrel - https://github.com/chaiNNer-org/spandrel implementing
-  - GFPGAN - https://github.com/TencentARC/GFPGAN.git
-  - CodeFormer - https://github.com/sczhou/CodeFormer
-  - ESRGAN - https://github.com/xinntao/ESRGAN
-  - SwinIR - https://github.com/JingyunLiang/SwinIR
-  - Swin2SR - https://github.com/mv-lab/swin2sr
-- LDSR - https://github.com/Hafiidz/latent-diffusion
-- MiDaS - https://github.com/isl-org/MiDaS
-- Ideas for optimizations - https://github.com/basujindal/stable-diffusion
-- Cross Attention layer optimization - Doggettx - https://github.com/Doggettx/stable-diffusion, original idea for prompt editing.
-- Cross Attention layer optimization - InvokeAI, lstein - https://github.com/invoke-ai/InvokeAI (originally http://github.com/lstein/stable-diffusion)
-- Sub-quadratic Cross Attention layer optimization - Alex Birch (https://github.com/Birch-san/diffusers/pull/1), Amin Rezaei (https://github.com/AminRezaei0x443/memory-efficient-attention)
-- Textual Inversion - Rinon Gal - https://github.com/rinongal/textual_inversion (we're not using his code, but we are using his ideas).
-- Idea for SD upscale - https://github.com/jquesnelle/txt2imghd
-- Noise generation for outpainting mk2 - https://github.com/parlance-zz/g-diffuser-bot
-- CLIP interrogator idea and borrowing some code - https://github.com/pharmapsychotic/clip-interrogator
-- Idea for Composable Diffusion - https://github.com/energy-based-model/Compositional-Visual-Generation-with-Composable-Diffusion-Models-PyTorch
-- xformers - https://github.com/facebookresearch/xformers
-- DeepDanbooru - interrogator for anime diffusers https://github.com/KichangKim/DeepDanbooru
-- Sampling in float32 precision from a float16 UNet - marunine for the idea, Birch-san for the example Diffusers implementation (https://github.com/Birch-san/diffusers-play/tree/92feee6)
-- Instruct pix2pix - Tim Brooks (star), Aleksander Holynski (star), Alexei A. Efros (no star) - https://github.com/timothybrooks/instruct-pix2pix
-- Security advice - RyotaK
-- UniPC sampler - Wenliang Zhao - https://github.com/wl-zhao/UniPC
-- TAESD - Ollin Boer Bohan - https://github.com/madebyollin/taesd
-- LyCORIS - KohakuBlueleaf
-- Restart sampling - lambertae - https://github.com/Newbeeer/diffusion_restart_sampling
-- Hypertile - tfernd - https://github.com/tfernd/HyperTile
-- Initial Gradio script - posted on 4chan by an Anonymous user. Thank you Anonymous user.
-- (You)
+It is the interface most people mean when they say "run Stable Diffusion locally": a Gradio app that loads a checkpoint, turns your prompt into conditioning, and hands the rest to the sampler. Everything except the prompt layer is upstream behaviour.
+
+```
+prompt ──► prompt_parser.py ──► CLIP text encoder ──► UNet sampler ──► VAE ──► gallery
+           weights · schedules      sd_hijack_*.py      sd_samplers_*     sd_vae
+```
+
+Your settings, styles, extensions and generation parameters all live on disk, so the UI behaves the same after a restart or an update.
+
+## 📸 Screenshot
+
+<img src="screenshot.png" alt="Stable Diffusion web UI" width="100%"/>
+
+## 🚀 Features
+
+- ⚡ **One-click install** — `webui.sh` / `webui-user.bat` create a venv, install torch and launch the server
+- 🖼️ **txt2img & img2img** — plus inpainting, outpainting and colour sketch
+- 🔁 **Hires. fix** — a second high-resolution pass without the usual distortions
+- 🎛️ **X/Y/Z plot** — grid comparisons across checkpoints, samplers, steps and CFG
+- 🅰️ **Prompt language** — `(word:1.3)`, `[a:b:0.5]`, `[a|b]`, `AND` and `BREAK`
+- 🧠 **Textual Inversion, LoRA & Hypernetworks** — embeddings and adapters loaded on the fly
+- 🖌️ **Extras tab** — GFPGAN, CodeFormer, RealESRGAN, SwinIR and LDSR upscalers
+- 📄 **PNG Info** — generation parameters travel inside the image and can be pasted back
+- 🧩 **Extensions & custom scripts** — installable from the UI, with an [ecosystem](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Custom-Scripts) around them
+- 🔌 **REST API** — start with `--api` to get `/sdapi/v1/*`
+- 🖥️ **Small cards welcome** — `--lowvram` / `--medvram`, with reports of 2 GB cards working
+- 🌗 **Themes & localization** — light/dark themes and community translations
+
+The full showcase, with images, lives in the upstream wiki: [Features](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Features).
+
+## 🛠️ Quick start
+
+### Requirements
+
+| Requirement | Notes |
+|---|---|
+| Python 3.10 or 3.11 | 3.10.6 is what upstream recommends; newer versions are often not covered by the pinned torch build |
+| git | used by the installer and by updates |
+| NVIDIA GPU *(recommended)* | AMD, Apple Silicon, Intel and Ascend NPUs work too — guides are linked below |
+| ~10 GB of disk | the venv with torch, plus at least one checkpoint |
+
+### Setup
+
+```bash
+git clone https://github.com/vincntlaw/stable-diffusion-webui
+cd stable-diffusion-webui
+./webui.sh          # Linux / macOS — Windows: webui-user.bat
+```
+
+The first run creates `venv/`, installs torch and the requirements, then serves the UI on <http://127.0.0.1:7860>. Put checkpoints in `models/Stable-diffusion/` and pick one from the top-left dropdown.
+
+Launch flags belong in `webui-user.sh` (or `COMMANDLINE_ARGS` in `webui-user.bat`):
+
+```bash
+export COMMANDLINE_ARGS="--xformers --medvram --api"
+```
+
+### Platform guides
+
+- 🪟 **Windows release package** — [v1.0.0-pre](https://github.com/AUTOMATIC1111/stable-diffusion-webui/releases/tag/v1.0.0-pre): download, `update.bat`, `run.bat`
+- 🐧 **Linux** — `sudo apt install wget git python3 python3-venv libgl1 libglib2.0-0`, then `./webui.sh`
+- 🍎 **Apple Silicon** — [Installation-on-Apple-Silicon](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Installation-on-Apple-Silicon)
+- 🔧 **Everything else** — [Dependencies](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Dependencies) · [NVidia](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Install-and-Run-on-NVidia-GPUs) · [AMD](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Install-and-Run-on-AMD-GPUs)
+
+## ⚙️ Prompt syntax
+
+| Syntax | What it does |
+|---|---|
+| `(word)` | emphasis ×1.1 |
+| `(word:1.4)` | emphasis with an explicit weight |
+| `[word]` | de-emphasis ÷1.1 |
+| `[from:to:0.5]` | start with `from`, switch to `to` at 50% of the steps |
+| `[a\|b\|c]` | alternate per step |
+| `cat AND dog` | composable diffusion — one conditioning per prompt |
+| `BREAK` | force a new 75-token chunk |
+| `\(` `\)` `\[` `\]` | literal brackets, not syntax |
+| `(word:1.2.3)` | not a weight — kept as text, reported by the token counter |
+
+## 🧠 How it fits together
+
+| Where | What lives there |
+|---|---|
+| `webui.py` | entry point: command-line args, initialization, server launch |
+| `modules/ui.py` | the Gradio interface — tabs, token counters, event wiring |
+| `modules/ui_toprow.py` | the prompt box, style dropdown and token counter widgets |
+| `modules/prompt_parser.py` | attention weights, `[a:b:step]` scheduling, `[a\|b]` alternation, composable `AND` |
+| `modules/processing.py` | the `StableDiffusionProcessing` pipeline shared by the UI and the API |
+| `modules/sd_hijack*.py` | hooks that make long prompts, weights and LoRAs work inside the model |
+| `modules/sd_samplers*.py` | sampler and scheduler implementations |
+| `modules/script_callbacks.py` | the extension points every custom script builds on |
+| `modules/api/api.py` | the REST API behind `--api` |
+
+## ✅ Tests
+
+```bash
+python -m modules.prompt_parser          # doctests, no GPU and no torch needed
+pytest test/test_prompt_parser.py -q     # 35 unit tests for the prompt language
+```
+
+The rest of `test/` is an integration suite that talks to a running webui over HTTP.
+
+## ⚠️ Disclaimer
+
+This fork is not affiliated with or endorsed by AUTOMATIC1111 or Stability AI. Model weights are **not** part of this repository — every checkpoint keeps its own license, so check it before you publish anything you generate. Use the API and the extensions you install at your own risk; the webui can run arbitrary Python when started with `--allow-code`.
+
+## 🙏 Credits & License
+
+- Original project and maintenance: **[@AUTOMATIC1111](https://github.com/AUTOMATIC1111)** → [upstream repository](https://github.com/AUTOMATIC1111/stable-diffusion-webui)
+- Upstream documentation: [wiki](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki) · [CHANGELOG](CHANGELOG.md)
+- Licenses for borrowed code: `Settings → Licenses`, also in [`html/licenses.html`](html/licenses.html)
+- License: **AGPL-3.0** — see [LICENSE.txt](LICENSE.txt) © AUTOMATIC1111
+
+<div align="center">
+
+**[💬 Find me on Discord](https://discord.com/users/283333002749018113)** · fork restyled with ❤️
+
+</div>
