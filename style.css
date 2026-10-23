@@ -238,6 +238,15 @@ input[type="checkbox"].input-accordion-checkbox{
     border: 2px solid rgba(255,0,0,0.4) !important;
 }
 
+.block.token-counter span.prompt-syntax-warning{
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 0.25em !important;
+    color: #ff9800;
+    cursor: help;
+}
+
 .block.token-counter div{
     display: inline;
 }

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import re
 from collections import namedtuple
 import lark
@@ -25,6 +26,13 @@ plain: /([^\\\[\]():|]|\\.)+/
 %import common.SIGNED_NUMBER -> NUMBER
 """)
 
+
+@functools.lru_cache(maxsize=128)
+def _parse_prompt_schedules_cached(prompts, base_steps, hires_steps, use_old_scheduling):
+    schedules = _parse_prompt_schedules(prompts, base_steps, hires_steps, use_old_scheduling)
+    return tuple(tuple((step, text) for step, text in schedule) for schedule in schedules)
+
+
 def get_learned_conditioning_prompt_schedules(prompts, base_steps, hires_steps=None, use_old_scheduling=False):
     """
     >>> g = lambda p: get_learned_conditioning_prompt_schedules([p], 10)[0]
@@ -46,8 +54,8 @@ def get_learned_conditioning_prompt_schedules(prompts, base_steps, hires_steps=N
     [[10, 'a [unbalanced']]
     >>> g("a [b:.5] c")
     [[5, 'a  c'], [10, 'a b c']]
-    >>> g("a [{b|d{:.5] c")  # not handling this right now
-    [[5, 'a  c'], [10, 'a {b|d{ c']]
+    >>> g("a [{b|d{:.5] c")  # not parsed by the grammar, the prompt is used as-is
+    [[10, 'a [{b|d{:.5] c']]
     >>> g("((a][:b:c [d:3]")
     [[3, '((a][:b:c '], [10, '((a][:b:c d']]
     >>> g("[a|(b:1.1)]")
@@ -63,6 +71,16 @@ def get_learned_conditioning_prompt_schedules(prompts, base_steps, hires_steps=N
     [[5, 'a  c'], [10, 'a b c']]
     """
 
+    # parsing a prompt with lark is by far the most expensive part of preparing a generation, so
+    # results are memoized for the (prompt, steps) combinations that get requested over and over:
+    # every token-counter refresh, every X/Y/Z plot cell and every batch item with the same prompt
+    schedules = _parse_prompt_schedules_cached(tuple(prompts), base_steps, hires_steps, use_old_scheduling)
+
+    # hand out fresh lists so that callers are free to modify what they get back
+    return [[[step, text] for step, text in schedule] for schedule in schedules]
+
+
+def _parse_prompt_schedules(prompts, base_steps, hires_steps=None, use_old_scheduling=False):
     if hires_steps is None or use_old_scheduling:
         int_offset = 0
         flt_offset = 0
@@ -367,7 +385,12 @@ re_attention = re.compile(r"""
 
 re_break = re.compile(r"\s*\bBREAK\b\s*", re.S)
 
-def parse_prompt_attention(text):
+# a weight has to be an actual number; things like "1.2.3" or "." look like weights to the tokenizer
+# but would make float() raise, so they are treated as plain text instead of aborting the generation
+re_attention_weight = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)\Z")
+
+
+def parse_prompt_attention(text, warnings=None):
     """
     Parses a string with attention tokens and returns a list of pairs: text and its associated weight.
     Accepted tokens are:
@@ -380,6 +403,12 @@ def parse_prompt_attention(text):
       \] - literal character ']'
       \\ - literal character '\'
       anything else - just text
+
+    Weights that are not actual numbers, e.g. '(abc:1.2.3)', are not treated as weights at all:
+    they stay in the prompt as plain text instead of raising ValueError and aborting the generation.
+
+    If `warnings` is a list, a human readable description of every problem found in the prompt
+    (unbalanced brackets, malformed weights) is appended to it.
 
     >>> parse_prompt_attention('normal text')
     [['normal text', 1.0]]
@@ -401,6 +430,11 @@ def parse_prompt_attention(text):
      [', sun, ', 1.1],
      ['sky', 1.4641000000000006],
      ['.', 1.1]]
+    >>> warnings = []
+    >>> parse_prompt_attention('an (important:1.2.3) word', warnings)
+    [['an ', 1.0], ['important:1.2.3', 1.1], [' word', 1.0]]
+    >>> warnings
+    ["invalid weight '1.2.3'"]
     """
 
     res = []
@@ -425,12 +459,25 @@ def parse_prompt_attention(text):
         elif text == '[':
             square_brackets.append(len(res))
         elif weight is not None and round_brackets:
-            multiply_range(round_brackets.pop(), float(weight))
+            if re_attention_weight.match(weight):
+                multiply_range(round_brackets.pop(), float(weight))
+            else:
+                if warnings is not None:
+                    warnings.append(f"invalid weight '{weight}'")
+
+                res.append([text[:-1], 1.0])
+                multiply_range(round_brackets.pop(), round_bracket_multiplier)
         elif text == ')' and round_brackets:
             multiply_range(round_brackets.pop(), round_bracket_multiplier)
         elif text == ']' and square_brackets:
             multiply_range(square_brackets.pop(), square_bracket_multiplier)
         else:
+            if warnings is not None:
+                if text == ')':
+                    warnings.append("unexpected ')' without a matching '('")
+                elif text == ']':
+                    warnings.append("unexpected ']' without a matching '['")
+
             parts = re.split(re_break, text)
             for i, part in enumerate(parts):
                 if i > 0:
@@ -442,6 +489,13 @@ def parse_prompt_attention(text):
 
     for pos in square_brackets:
         multiply_range(pos, square_bracket_multiplier)
+
+    if warnings is not None:
+        if round_brackets:
+            warnings.append("unclosed '(' bracket" if len(round_brackets) == 1 else f"{len(round_brackets)} unclosed '(' brackets")
+
+        if square_brackets:
+            warnings.append("unclosed '[' bracket" if len(square_brackets) == 1 else f"{len(square_brackets)} unclosed '[' brackets")
 
     if len(res) == 0:
         res = [["", 1.0]]
@@ -456,6 +510,29 @@ def parse_prompt_attention(text):
             i += 1
 
     return res
+
+
+def check_prompt_syntax(text):
+    """Returns a list of human-readable warnings about the syntax of a prompt.
+
+    Only the two mistakes that silently change the meaning of the rest of the prompt are
+    reported: brackets that do not balance out, and attention weights that are not numbers.
+
+    >>> check_prompt_syntax('a (cat:1.2) in a [box]')
+    []
+    >>> check_prompt_syntax('a (cat')
+    ["unclosed '(' bracket"]
+    >>> check_prompt_syntax('a cat) then (dog')
+    ["unexpected ')' without a matching '('", "unclosed '(' bracket"]
+    >>> check_prompt_syntax('a ((cat:1.2.3)')
+    ["invalid weight '1.2.3'", "unclosed '(' bracket"]
+    """
+    warnings = []
+    parse_prompt_attention(text, warnings=warnings)
+
+    # the same mistake can be repeated a dozen times in one prompt; report each kind once
+    return list(dict.fromkeys(warnings))
+
 
 if __name__ == "__main__":
     import doctest
