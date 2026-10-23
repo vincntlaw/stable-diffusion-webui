@@ -301,6 +301,7 @@ options_templates.update(options_section(('ui_prompt_editing', "Prompt editing",
     "keyedit_move": OptionInfo(True, "Alt+left/right moves prompt elements"),
     "disable_token_counters": OptionInfo(False, "Disable prompt token counters"),
     "include_styles_into_token_counters": OptionInfo(True, "Count tokens of enabled styles").info("When calculating how many tokens the prompt has, also consider tokens added by enabled styles."),
+    "prompt_syntax_check": OptionInfo(True, "Show prompt syntax warnings next to the token counter").info("Warns about brackets that do not balance out and about attention weights that are not numbers, since both are silently applied to the rest of the prompt."),
 }))
 
 options_templates.update(options_section(('ui_gallery', "Gallery", "ui"), {

@@ -1,4 +1,5 @@
 import datetime
+import html
 import mimetypes
 import os
 import sys
@@ -183,7 +184,17 @@ def update_token_counter(text, steps, styles, *, is_positive=True):
     flat_prompts = reduce(lambda list1, list2: list1+list2, prompt_schedules)
     prompts = [prompt_text for step, prompt_text in flat_prompts]
     token_count, max_length = max([model_hijack.get_prompt_lengths(prompt) for prompt in prompts], key=lambda args: args[0])
-    return f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>"
+    res = f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>"
+
+    if shared.opts.prompt_syntax_check and text:
+        # unbalanced brackets and malformed weights are applied silently to the rest of the prompt,
+        # so give the user a hint instead of letting them wonder why the image does not match
+        warnings = prompt_parser.check_prompt_syntax(text)
+        if warnings:
+            title = html.escape("; ".join(warnings), quote=True)
+            res += f"<span class='prompt-syntax-warning' title='{title}'>⚠</span>"
+
+    return res
 
 
 def update_negative_prompt_token_counter(*args):
